@@ -1,7 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -9,76 +9,42 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
     setLoading(true);
-
     try {
-      const res = await fetch(`http://localhost:8000/Register`, { 
+      const res = await fetch(`/api/Register`, { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.detail || "Erreur lors de l'inscription");
-        setLoading(false);
-        return;
-      }
-
-      setSuccess(`Utilisateur "${data.username}" créé avec succès !`);
-      setUsername("");
-      setPassword("");
-      setTimeout(() => router.push("/login"), 2000);
-    } catch (err) {
-      console.error(err);
-      setError("Erreur réseau ou serveur");
+      if (!res.ok) throw new Error("Erreur inscription");
+      router.push("/login");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-green-200 via-yellow-200 to-pink-200 flex items-center justify-center p-4">
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-green-700">
-          Créer un compte
-        </h2>
-
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-md border border-slate-200">
+        <h2 className="text-4xl font-black mb-2 text-slate-900 uppercase italic tracking-tighter text-center">Inscription</h2>
+        <p className="text-slate-500 text-center font-bold mb-8">Rejoignez RetentionAI dès aujourd'hui</p>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition-all font-semibold"
-          >
-            {loading ? "Création..." : "Créer un compte"}
+          <input type="text" placeholder="Futur Utilisateur" value={username} onChange={(e) => setUsername(e.target.value)} required className="w-full p-4 border-2 border-slate-100 rounded-xl focus:border-emerald-500 outline-none text-slate-900 font-bold"/>
+          <input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full p-4 border-2 border-slate-100 rounded-xl focus:border-emerald-500 outline-none text-slate-900 font-bold"/>
+          <button type="submit" disabled={loading} className="w-full bg-emerald-600 text-white py-4 rounded-xl hover:bg-emerald-700 transition-all font-black text-lg shadow-lg">
+            {loading ? "CRÉATION..." : "CRÉER MON COMPTE"}
           </button>
-
-          {error && <p className="text-red-600 text-center mt-2">{error}</p>}
-          {success && <p className="text-green-600 text-center mt-2">{success}</p>}
+          {error && <p className="text-red-600 font-bold text-center mt-2">{error}</p>}
         </form>
+        <p className="mt-8 text-center text-slate-600 font-bold">
+          Déjà inscrit ? <Link href="/login" className="text-emerald-600 hover:underline">Se connecter</Link>
+        </p>
       </div>
     </div>
   );
