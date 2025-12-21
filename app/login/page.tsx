@@ -1,7 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Login() {
   const router = useRouter();
@@ -14,81 +14,43 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       const body = new URLSearchParams();
       body.append("username", username);
       body.append("password", password);
-
-      const res = await fetch(`http://localhost:8000/login`, {
+      const res = await fetch(`/api/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: body.toString(),
       });
-
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.detail || "Erreur d'authentification");
-        setLoading(false);
-        return;
-      }
-
-      const token = (data as any).access_token;
-      if (!token) {
-        setError("Aucun token reçu");
-        setLoading(false);
-        return;
-      }
-
-      localStorage.setItem("access_token", token);
+      if (!res.ok) throw new Error(data.detail || "Erreur");
+      localStorage.setItem("access_token", data.access_token);
       router.push("/predict");
-    } catch (err) {
-      console.error(err);
-      setError("Erreur réseau ou serveur");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-blue-200 via-purple-200 to-pink-200 flex items-center justify-center p-4">
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-purple-700">
-          Connexion
-        </h2>
-
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-md border border-slate-200">
+        <h2 className="text-4xl font-black mb-2 text-slate-900 uppercase italic tracking-tighter text-center">Connexion</h2>
+        <p className="text-slate-500 text-center font-bold mb-8">Accédez à votre tableau de bord RH</p>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-purple-600 text-white py-3 rounded-xl hover:bg-purple-700 transition-all font-semibold"
-          >
-            {loading ? "Connexion..." : "Se connecter"}
+          <input type="text" placeholder="Utilisateur" value={username} onChange={(e) => setUsername(e.target.value)} required className="w-full p-4 border-2 border-slate-100 rounded-xl focus:border-indigo-500 outline-none text-slate-900 font-bold placeholder-slate-400"/>
+          <input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full p-4 border-2 border-slate-100 rounded-xl focus:border-indigo-500 outline-none text-slate-900 font-bold placeholder-slate-400"/>
+          <button type="submit" disabled={loading} className="w-full bg-indigo-600 text-white py-4 rounded-xl hover:bg-indigo-700 transition-all font-black text-lg shadow-lg">
+            {loading ? "VÉRIFICATION..." : "SE CONNECTER"}
           </button>
-
-          {error && (
-            <p className="text-red-600 text-center mt-2 animate-pulse">{error}</p>
-          )}
+          {error && <p className="text-red-600 font-bold text-center mt-2">{error}</p>}
         </form>
+        <p className="mt-8 text-center text-slate-600 font-bold">
+          Nouveau ? <Link href="/register" className="text-indigo-600 hover:underline">Créer un compte</Link>
+        </p>
       </div>
     </div>
   );
