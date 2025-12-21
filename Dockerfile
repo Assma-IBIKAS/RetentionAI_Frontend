@@ -1,15 +1,11 @@
-FROM node:24
+FROM node:20
 
-WORKDIR /RetentionAI_fr
+WORKDIR /app
 
-COPY package.json yarn.lock* package-lock.json* ./
+COPY package.json package-lock.json* yarn.lock* ./
 
 RUN npm install
 
 COPY . .
-
-#RUN npm run build
-
-#EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
